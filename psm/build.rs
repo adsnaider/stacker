@@ -72,7 +72,6 @@ fn main() {
     let endian = var("CARGO_CFG_TARGET_ENDIAN").unwrap();
 
     let mut cfg = cc::Build::new();
-
     let msvc = cfg.get_compiler().is_like_msvc();
     // If we're targeting msvc, either via regular MS toolchain or clang-cl, we
     // will _usually_ want to use the regular Microsoft assembler if it exists,
@@ -83,6 +82,9 @@ fn main() {
     // supports compiling MASM, but that is not stable yet
     let masm = msvc && var("HOST").expect("HOST env not set").contains("windows");
 
+    if arch == "aarch64" && os == "darwin" {
+        cfg.ar_flag("-static");
+    }
     let asm = if let Some((asm, canswitch)) = find_assembly(&arch, &endian, &os, &env, masm) {
         println!("cargo:rustc-cfg=asm");
         println!("cargo:rustc-cfg=link_asm");
